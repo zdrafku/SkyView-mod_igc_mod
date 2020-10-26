@@ -50,7 +50,7 @@
 #include "GDL90Helper.h"
 
 #include "SkyView.h"
-
+#include "WriteToCard.h"
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_SKYVIEW,
   .revision = HW_REV_UNKNOWN,
@@ -78,6 +78,7 @@ void setup()
 
   delay(300);
   Serial.begin(SERIAL_OUT_BR); Serial.println();
+  filename_print();
 
   Serial.println();
   Serial.print(F(SKYVIEW_IDENT));
@@ -142,7 +143,7 @@ void loop()
   Traffic_loop();
 
   EPD_loop();
-
+  serial_prints();
   Traffic_ClearExpired();
 
   WiFi_loop();
