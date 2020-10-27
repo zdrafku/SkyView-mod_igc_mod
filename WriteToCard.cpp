@@ -25,7 +25,7 @@ void filename_print()  {
   Serial.print("DEBUG-2: ");
   Serial.println(CurrentTime);
   // shutdown Arduino!
-  esp_deep_sleep_start();
+  //esp_deep_sleep_start();
 }
 
 bool checkFile(fs::FS &fs, const char *path){
