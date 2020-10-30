@@ -17,10 +17,9 @@
 #include "SPI.h"
 #include "TinyGPS++.h"
 
-#define WAIT_TIME       1000 /* 5 seconds */
+#define WAIT_TIME       5000 /* 5 seconds */
 #define SerialInput  Serial1
 
 void serial_prints();
-void filename_print();
 
 #endif /* WRITETOCARD_H */
