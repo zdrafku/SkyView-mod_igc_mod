@@ -6,32 +6,18 @@
  *  Author: Mr. Psycho, psychotm@gmail.com
  */
 
+// EEPROMHelper is needed for the settings->connection variable:
+// 1. Serial / CON_SERIAL
+// 2. WiFi UDP / CON_WIFI_UDP
+#include "EEPROMHelper.h"
+// NMEAHelper is needed for the GPS/NMEA data
+#include "NMEAHelper.h"
 #include "WriteToCard.h"
 TinyGPSPlus gpsdata;
 
 unsigned long ElapsedTime;
 unsigned long StartTime;
-char l_CurrentTime[sizeof(unsigned long)*8+1];
-
-void filename_print()  {
-  long CurrentTime = millis();
-  ltoa(CurrentTime, l_CurrentTime, sizeof(CurrentTime)+2);
-
-  const char *FileName = '/' + l_CurrentTime + '.txt';
-  Serial.print("DEBUG-file: ");
-  Serial.println(FileName);
-  Serial.print("DEBUG: ");
-  Serial.println(l_CurrentTime);
-  Serial.print("DEBUG-2: ");
-  Serial.println(CurrentTime);
-  // shutdown Arduino!
-  //esp_deep_sleep_start();
-}
-
-bool checkFile(fs::FS &fs, const char *path){
-  File file = fs.open(path);
-  return file;
-}
+char FileName[sizeof(unsigned long)*8+1];
 
 void appendFile(fs::FS &fs, const char *path, const char *message) {
   //Serial.printf("Appending to file: %s\n", path);
@@ -51,19 +37,37 @@ void appendFile(fs::FS &fs, const char *path, const char *message) {
 void serial_prints() {
   unsigned long CurrentTime = millis();
   ElapsedTime = CurrentTime - StartTime;
-  ultoa(CurrentTime, l_CurrentTime, 20);
 
-  const char *FileName = '/' + l_CurrentTime + '.txt';  
-  if ( checkFile(SD, FileName) ) {
-    Serial.println("File exists");
-  } else {
-    Serial.print("File ");
-    Serial.print(FileName);
-    Serial.println(" doesn't exist!!!");
-    //appendFile(SD, FileName, "jjj\n");
-  }
   // if have passed WAIT_TIME seconds
   if ( WAIT_TIME < ElapsedTime ) {
+
+    switch (settings->connection) {
+      case 2:
+        //Serial.print("settings->connection: ");
+        //Serial.println("CON_WIFI_UDP");
+      break;
+      case 1:
+        //Serial.print("settings->connection: ");
+        //Serial.println("CON_SERIAL");
+        sprintf(FileName, "/%d-millis.txt", CurrentTime);
+
+        if ( SD.open(FileName) ) {
+          Serial.println("File ");
+          Serial.print(FileName);
+          Serial.println(" exists");
+        } else {
+          Serial.print("File ");
+          Serial.print(FileName);
+          Serial.println(" doesn't exist!!!");
+          //appendFile(SD, FileName, "jjj\n");
+        }
+      break;
+      default:
+        Serial.print("settings->connection: ");
+        Serial.println(settings->connection);
+      break;
+    }
+
     // if there is valid GNSS data
     if ( gpsdata.location.isValid()         && \
         gpsdata.altitude.isValid()            && \
@@ -72,22 +76,11 @@ void serial_prints() {
         (gpsdata.altitude.age() <= WAIT_TIME) && \
         (gpsdata.date.age()     <= WAIT_TIME)    \
     ) {
+
       Serial.print("Date: ");
       Serial.println(gpsdata.date.value());
-      Serial.print("Latitude: ");
-      Serial.println(gpsdata.location.rawLat().deg);
-      Serial.print("Longitude: ");
-      Serial.println(gpsdata.location.rawLng().deg);
-      Serial.print("Speed (km/h): ");
-      Serial.println(gpsdata.speed.kmph());
-      Serial.print("Altitude: ");
-      Serial.println(gpsdata.altitude.meters());
-      Serial.print("Satellites: ");
-      Serial.println(gpsdata.satellites.value());
     } else {
       Serial.println("No GPS Signal!");
-      Serial.print("Satellites: ");
-      Serial.println(gpsdata.satellites.value());
     }
 
     StartTime = millis();
