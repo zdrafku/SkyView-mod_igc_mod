@@ -78,7 +78,6 @@ void setup()
 
   delay(300);
   Serial.begin(SERIAL_OUT_BR); Serial.println();
-  filename_print();
 
   Serial.println();
   Serial.print(F(SKYVIEW_IDENT));
