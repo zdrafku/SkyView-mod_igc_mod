@@ -9,7 +9,10 @@
 #ifndef WRITETOCARD_H
 #define WRITETOCARD_H
 
-#include "EPDHelper.h"
+// EEPROMHelper is needed for the settings->protocol variable:
+#include "EEPROMHelper.h"
+// NMEAHelper is needed for the GPS/NMEA data
+#include "NMEAHelper.h"
 #include "SkyView.h"
 
 #include "FS.h"
@@ -17,8 +20,14 @@
 #include "SPI.h"
 #include "TinyGPS++.h"
 
-#define WAIT_TIME       5000 /* 5 seconds */
-#define SerialInput  Serial1
+#define isValidGNSSFix()  ( nmea.location.isValid()               && \
+                            nmea.altitude.isValid()               && \
+                            nmea.date.isValid()                   && \
+                           (nmea.location.age() <= NMEA_EXP_TIME) && \
+                           (nmea.altitude.age() <= NMEA_EXP_TIME) && \
+                           (nmea.date.age()     <= NMEA_EXP_TIME))
+
+#define WAIT_TIME       4500 /* 4.5 seconds */
 
 void serial_prints();
 
