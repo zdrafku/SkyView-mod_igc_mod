@@ -34,7 +34,7 @@ void serial_prints() {
   if ( WAIT_TIME < ElapsedTime ) {
     // if there is valid GNSS data
     if ( isValidGNSSFix() ) {
-      sprintf(FileName, "/%4u-%02u-%02u-ZZZ-AAA-", nmea.date.year(), nmea.date.month(), nmea.date.day());
+      sprintf(FileName, "/%4u-%02u-%02u-PSY-CHO-", nmea.date.year(), nmea.date.month(), nmea.date.day());
       // <time> <lat> <long> <altitude from pressure sensor> <altitude from GPS>
       // B 110135 52.06343N 000.06198W A 00587 00558
 
