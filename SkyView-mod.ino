@@ -51,6 +51,7 @@
 
 #include "SkyView.h"
 #include "WriteToCard.h"
+
 hardware_info_t hw_info = {
   .model    = SOFTRF_MODEL_SKYVIEW,
   .revision = HW_REV_UNKNOWN,
