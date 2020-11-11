@@ -50,7 +50,7 @@ byte getVal(char c)
 void Hex2Bin(String str, byte *buffer)
 {
   char hexdata[2 * PKT_SIZE + 1];
-  
+
   str.toCharArray(hexdata, sizeof(hexdata));
   for(int j = 0; j < PKT_SIZE * 2 ; j+=2)
   {
@@ -305,6 +305,30 @@ void handleSettings() {
 <option %s value='%d'>make & model</option>\
 </select>\
 </td>\
+</tr>\
+<tr>\
+<th align=left>1st Pilot name</th>\
+<td align=right>\
+<INPUT type='text' name='glider_pilot' maxlength='25' size='25' value='%s'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>2nd Pilot name</th>\
+<td align=right>\
+<INPUT type='text' name='glider_crew' maxlength='25' size='25' value='%s'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Plane type</th>\
+<td align=right>\
+<INPUT type='text' name='glider_type' maxlength='25' size='25' value='%s'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Plane registration</th>\
+<td align=right>\
+<INPUT type='text' name='glider_registration' maxlength='25' size='25' value='%s'>\
+</td>\
 </tr>"),
   settings->server, settings->key,
   (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
@@ -325,7 +349,8 @@ void handleSettings() {
   (settings->adb == DB_ICAO      ? "selected" : ""), DB_ICAO,
   (settings->idpref == ID_REG    ? "selected" : ""), ID_REG,
   (settings->idpref == ID_TAIL   ? "selected" : ""), ID_TAIL,
-  (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM
+  (settings->idpref == ID_MAM    ? "selected" : ""), ID_MAM,
+  settings->glider_pilot, settings->glider_crew, settings->glider_type, settings->glider_registration
   );
 
   len = strlen(offset);
@@ -601,6 +626,14 @@ void handleInput() {
       settings->filter = server.arg(i).toInt();
     } else if (server.argName(i).equals("power_save")) {
       settings->power_save = server.arg(i).toInt();
+    } else if (server.argName(i).equals("glider_pilot")) {
+      server.arg(i).toCharArray(settings->glider_pilot, sizeof(settings->glider_pilot));
+    } else if (server.argName(i).equals("glider_crew")) {
+      server.arg(i).toCharArray(settings->glider_crew, sizeof(settings->glider_crew));
+    } else if (server.argName(i).equals("glider_type")) {
+      server.arg(i).toCharArray(settings->glider_type, sizeof(settings->glider_type));
+    } else if (server.argName(i).equals("glider_registration")) {
+      server.arg(i).toCharArray(settings->glider_registration, sizeof(settings->glider_registration));
     } else if (server.argName(i).equals("team")) {
       char buf[7];
       server.arg(i).toCharArray(buf, sizeof(buf));
