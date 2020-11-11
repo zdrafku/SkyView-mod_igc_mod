@@ -41,7 +41,7 @@ void EEPROM_setup()
   }
 
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    eeprom_block.raw[i] = EEPROM.read(i);  
+    eeprom_block.raw[i] = EEPROM.read(i);
   }
 
   if (eeprom_block.field.magic != SKYVIEW_EEPROM_MAGIC) {
@@ -90,12 +90,17 @@ void EEPROM_defaults()
   eeprom_block.field.settings.filter          = TRAFFIC_FILTER_OFF;
   eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
   eeprom_block.field.settings.team            = 0;
+
+  strcpy(eeprom_block.field.settings.glider_pilot,    DEFAULT_G_PILOT);
+  strcpy(eeprom_block.field.settings.glider_crew,    DEFAULT_G_CREW);
+  strcpy(eeprom_block.field.settings.glider_type,    DEFAULT_G_TYPE);
+  strcpy(eeprom_block.field.settings.glider_registration,    DEFAULT_G_REGISTRATION);
 }
 
 void EEPROM_store()
 {
   for (int i=0; i<sizeof(eeprom_t); i++) {
-    EEPROM.write(i, eeprom_block.raw[i]);  
+    EEPROM.write(i, eeprom_block.raw[i]);
   }
 
   EEPROM.commit();
