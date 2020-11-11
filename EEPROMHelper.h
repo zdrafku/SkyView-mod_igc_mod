@@ -26,6 +26,10 @@
 
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE
 #define SKYVIEW_EEPROM_VERSION 0x0000001C
+#define DEFAULT_G_PILOT         "Pilot in command"
+#define DEFAULT_G_CREW          "Instructor"
+#define DEFAULT_G_TYPE          "Glider"
+#define DEFAULT_G_REGISTRATION  "LZ-XXX"
 
 typedef struct Settings {
     uint8_t  adapter;
@@ -61,6 +65,11 @@ typedef struct Settings {
     uint8_t  resvd7;
     uint8_t  resvd8;
     uint8_t  resvd9;
+
+    char glider_pilot[25];
+    char glider_crew[25];
+    char glider_type[25];
+    char glider_registration[25];
 } settings_t;
 
 typedef struct EEPROM_S {
