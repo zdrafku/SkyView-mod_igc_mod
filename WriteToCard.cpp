@@ -10,56 +10,176 @@
 
 unsigned long ElapsedTime;
 unsigned long StartTime;
-char FileName[sizeof(unsigned long)*8+1];
 
-void appendFile(fs::FS &fs, const char *path, String message) {
-  //Serial.printf("Appending to file: %s\n", path);
+String FileName;
+String T_Row;
+char F_Date[12];
+char GPS_Time[6];
+char GPS_Alt[5];
+bool run_once;
 
+void appendFile(fs::FS &fs, String path, String message) {
   File file = fs.open(path, FILE_APPEND);
   if (!file) {
-    //Serial.println("Failed to open file for appending");
+    //Serial.println("Failed to open file for appending" + path);
+    file.close();
     return;
   }
+
   if (file.print(message)) {
-    //Serial.print("Message appended to file: ");
-    //Serial.println(message);
+    Serial.println("Message appended to file: " + path);
+    Serial.println(message);
   }
   file.close();
+}
+
+String fCheck(fs::FS &fs, String fDate) {
+  String f_Constant = "-PSY-CHO-" + String((SoC->getChipId() & 0xFFFFFF), HEX) + "-";
+  String r_Path = "/" + fDate + "/" + fDate + f_Constant;
+  char count[2];
+
+  fs.mkdir("/" + fDate);
+
+  File root_dir = fs.open("/" + fDate);
+  File list = root_dir.openNextFile();
+  int c = 0;
+  while (list) {
+    String file_name = list.name();
+    String f_count = file_name.substring(38, 40);
+    if ( file_name.indexOf(r_Path) == 0 ) {
+      if ( f_count.toInt() > 0 && f_count.toInt() > c) {
+        c = f_count.toInt();
+      }
+    }
+    list = root_dir.openNextFile();
+  }
+  root_dir.close();
+  sprintf(count, "%02i", ++c);
+  return r_Path + count + ".igc";
 }
 
 void serial_prints() {
   unsigned long CurrentTime = millis();
   ElapsedTime = CurrentTime - StartTime;
 
-  if ( WAIT_TIME < ElapsedTime ) {
+  if (WAIT_TIME < ElapsedTime) {
     // if there is valid GNSS data
-    if ( isValidGNSSFix() ) {
-      sprintf(FileName, "/%4u-%02u-%02u-PSY-CHO-", nmea.date.year(), nmea.date.month(), nmea.date.day());
-      // <time> <lat> <long> <altitude from pressure sensor> <altitude from GPS>
-      // B 110135 52.06343N 000.06198W A 00587 00558
 
-      String T_Row = "B";
-      T_Row += nmea.time.value();
-      T_Row.remove(7, 2);
+    if (isValidGNSSFix()) {
+      // %d.%02d", (int)f, (int)(f*100)%100);
+      sprintf(GPS_Alt, "%05u", (int)nmea.altitude.meters());
+
+      if ( !run_once ) {
+        sprintf(F_Date, "%04u-%02u-%02u", nmea.date.year(), nmea.date.month(), nmea.date.day());
+        FileName = fCheck(SD, F_Date);
+
+        char H_Date[4];
+        sprintf(H_Date, "%02u%02u", nmea.date.day(), nmea.date.month());
+        String str_H_Date = H_Date;
+        str_H_Date += nmea.date.year();
+        str_H_Date.remove(4, 2);
+
+        // <time> <lat> <long> <altitude from pressure sensor> <altitude from GPS>
+        // B 110135 52.06343N 000.06198W A 00587 00558
+        // B 926240 4266453N2340566E AaltBARO 571
+        String Header = "APSYCHO SkyView-mod\n";
+        Header += "HFDTE" + str_H_Date + "\n";
+        Header += "HFFXA050\n";
+        // from web settings
+        Header += "HFPLTPILOTINCHARGE:";
+        Header.concat(settings->glider_pilot);
+        Header += "\n";
+        Header += "HFCM2CREW2:";
+        Header.concat(settings->glider_crew);
+        Header += "\n";
+        Header += "HFGTYGLIDERTYPE:";
+        Header.concat(settings->glider_type);
+        Header += "\n";
+        Header += "HFGIDGLIDERID:";
+        Header.concat(settings->glider_registration);
+        Header += "\n";
+        // from web settings
+        Header += "HFFTYFRTYPE: SoftRF + SkyView-mod by Mr. Psycho\n";
+        Header += "HFGPS: SoftRF tracker\n";
+        // if altBaro is set
+        // Header += "HFPRSPRESSALTSENSOR: \n";
+        Header += "HFDTM100GPSDATUM:WGS-1984\n";
+        Header += "I023638FXA3940SIU\n";
+        run_once = true;
+
+        appendFile(SD, FileName, Header);
+        //Serial.println(ESP.getFreeHeap()/1024);
+      }
+
+      T_Row = "B";
+      sprintf(GPS_Time, "%02u%02u%02u", nmea.time.hour(), nmea.time.minute(), nmea.time.second());
+      T_Row += GPS_Time;
       T_Row += " ";
       T_Row += String(nmea.location.lat(), 5);
       T_Row += nmea.location.rawLat().negative ? "S" : "N";
-
+      T_Row += " ";
       T_Row += String(nmea.location.lng(), 5);
       T_Row += nmea.location.rawLng().negative ? "W" : "E";
-      T_Row += "A";
-      T_Row += "altBARO";
-      T_Row += " ";
-      T_Row += String(nmea.altitude.meters(), 0);
       T_Row.replace(".", "");
-      T_Row += "\n";
-      appendFile(SD, FileName, T_Row);
+      T_Row += " ";
+      T_Row += "A";
+      T_Row += GPS_Alt;
+      T_Row += GPS_Alt;
+      T_Row += "00000";
+      T_Row += " S ";
+      T_Row += nmea.speed.kmph();
 
-      //Serial.print("T_Row: ");
+      T_Row += "\n";
+
+      appendFile(SD, FileName, T_Row);
       //Serial.println(T_Row);
     }
-
     StartTime = millis();
     ElapsedTime = 0;
   }
 }
+
+/*
+
+String readFile(fs::FS &fs, const char *path, String delimiter) {
+  //Serial.printf("Reading file: %s\n", path);
+
+  File conf_file = fs.open(path);
+  if(!conf_file) {
+    //Serial.println("Failed to open file for reading");
+    conf_file.close();
+    return "";
+  }
+
+  //Serial.print("Read from file: ");
+  String Config_Line;
+  String Line_Parse;
+  while(conf_file.available()) {
+    Config_Line = conf_file.readStringUntil('\n');
+    if ( Config_Line.indexOf(delimiter) == 0 ) {
+      Config_Line.replace(delimiter, "");
+      conf_file.close();
+      return Config_Line;
+    }
+
+    //Serial.println(Config_Line.indexOf(delimiter));
+    //Serial.println(Config_Line);
+  }
+  conf_file.close();
+}
+
+#define DEFAULT_G_PILOT         "Pilot in command"
+#define DEFAULT_G_CREW          "Instructor"
+#define DEFAULT_G_TYPE          "Pilot in command"
+#define DEFAULT_G_REGISTRATION  "LZ-XXX"
+  strcpy(eeprom_block.field.settings.glider_pilot,    DEFAULT_G_PILOT);
+  strcpy(eeprom_block.field.settings.glider_crew,    DEFAULT_G_CREW);
+  strcpy(eeprom_block.field.settings.glider_type,    DEFAULT_G_TYPE);
+  strcpy(eeprom_block.field.settings.glider_registration,    DEFAULT_G_REGISTRATION);
+
+for (int i=0; i<sizeof(eeprom_t); i++) {
+  EEPROM.write(i, glider_settings.raw[i]);
+}
+
+EEPROM.commit();
+ */
