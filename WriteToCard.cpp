@@ -28,7 +28,7 @@ void appendFile(fs::FS &fs, String path, String message) {
     //Serial.println("Failed to open file for appending" + path);
     //Serial.print("Would appended message to file: ");
     //Serial.println(path);
-    /Serial.println(message);
+    //Serial.println(message);
     file.close();
     return;
   }
