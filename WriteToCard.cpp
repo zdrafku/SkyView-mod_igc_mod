@@ -10,12 +10,16 @@
 
 unsigned long ElapsedTime;
 unsigned long StartTime;
+unsigned long Record;
+unsigned long NoSpeed;
 
 String FileName;
 String T_Row;
 char F_Date[12];
-char GPS_Time[6];
-char GPS_Alt[5];
+char GPS_Time[7];
+char GPS_Alt[6];
+char GPS_Lat[8];
+char GPS_Lng[9];
 bool run_once;
 
 void appendFile(fs::FS &fs, String path, String message) {
@@ -23,6 +27,9 @@ void appendFile(fs::FS &fs, String path, String message) {
   if (!file) {
     //Serial.println("Failed to open file for appending" + path);
     file.close();
+    Serial.print("Would appended message to file: ");
+    Serial.println(path);
+    Serial.println(message);
     return;
   }
 
@@ -62,12 +69,35 @@ void serial_prints() {
   unsigned long CurrentTime = millis();
   ElapsedTime = CurrentTime - StartTime;
 
+
   if (WAIT_TIME < ElapsedTime) {
-    // if there is valid GNSS data
+      // if there is valid GNSS data
 
     if (isValidGNSSFix()) {
+      Record = CurrentTime - NoSpeed;
+      if ( (int)nmea.speed.kmph() < MIN_SPEED ) {
+        if ( run_once && KEEP_ALIVE < Record ) {
+          Serial.print("Will reset RECORD with speed: ");
+          Serial.println((int)nmea.speed.kmph());
+          Serial.println("Will start new .IGC file");
+          run_once = false;
+          Record = 0;
+          return;
+        } else {
+          //run_once = false;
+          return;
+        }
+      }
+      Serial.print("Resetting RECORD: ");
+      Serial.println(Record);
+      Record = 0;
+      Serial.print("Record: ");
+      Serial.println(Record/1000);
+
       // %d.%02d", (int)f, (int)(f*100)%100);
       sprintf(GPS_Alt, "%05u", (int)nmea.altitude.meters());
+      sprintf(GPS_Lat, "%02u%5u", (int)nmea.location.lat(), (int)(nmea.location.lat()*100000)%100000);
+      sprintf(GPS_Lng, "%03u%5u", (int)nmea.location.lng(), (int)(nmea.location.lng()*100000)%100000);
 
       if ( !run_once ) {
         sprintf(F_Date, "%04u-%02u-%02u", nmea.date.year(), nmea.date.month(), nmea.date.day());
@@ -114,20 +144,14 @@ void serial_prints() {
       T_Row = "B";
       sprintf(GPS_Time, "%02u%02u%02u", nmea.time.hour(), nmea.time.minute(), nmea.time.second());
       T_Row += GPS_Time;
-      T_Row += " ";
-      T_Row += String(nmea.location.lat(), 5);
+      T_Row += GPS_Lat;
       T_Row += nmea.location.rawLat().negative ? "S" : "N";
-      T_Row += " ";
-      T_Row += String(nmea.location.lng(), 5);
+      T_Row += GPS_Lng;
       T_Row += nmea.location.rawLng().negative ? "W" : "E";
-      T_Row.replace(".", "");
-      T_Row += " ";
       T_Row += "A";
       T_Row += GPS_Alt;
       T_Row += GPS_Alt;
       T_Row += "00000";
-      T_Row += " S ";
-      T_Row += nmea.speed.kmph();
 
       T_Row += "\n";
 
