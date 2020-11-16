@@ -27,7 +27,9 @@
                            (nmea.altitude.age() <= NMEA_EXP_TIME) && \
                            (nmea.date.age()     <= NMEA_EXP_TIME))
 
-#define WAIT_TIME       4500 /* 4.5 seconds */
+#define WAIT_TIME       4500  /* 4.5 seconds */
+#define KEEP_ALIVE      20000 /* 60 seconds */
+#define MIN_SPEED       20    /* 20km/h */
 
 void serial_prints();
 
