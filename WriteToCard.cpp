@@ -26,10 +26,10 @@ void appendFile(fs::FS &fs, String path, String message) {
   File file = fs.open(path, FILE_APPEND);
   if (!file) {
     //Serial.println("Failed to open file for appending" + path);
+    //Serial.print("Would appended message to file: ");
+    //Serial.println(path);
+    /Serial.println(message);
     file.close();
-    Serial.print("Would appended message to file: ");
-    Serial.println(path);
-    Serial.println(message);
     return;
   }
 
@@ -77,9 +77,8 @@ void serial_prints() {
       Record = CurrentTime - NoSpeed;
       if ( (int)nmea.speed.kmph() < MIN_SPEED ) {
         if ( run_once && KEEP_ALIVE < Record ) {
-          Serial.print("Will reset RECORD with speed: ");
+          Serial.print("Will start new .IGC file and reset RECORD with speed: ");
           Serial.println((int)nmea.speed.kmph());
-          Serial.println("Will start new .IGC file");
           run_once = false;
           Record = 0;
           return;
@@ -89,10 +88,8 @@ void serial_prints() {
         }
       }
       Serial.print("Resetting RECORD: ");
-      Serial.println(Record);
-      Record = 0;
-      Serial.print("Record: ");
       Serial.println(Record/1000);
+      Record = 0;
 
       // %d.%02d", (int)f, (int)(f*100)%100);
       sprintf(GPS_Alt, "%05u", (int)nmea.altitude.meters());
@@ -110,8 +107,6 @@ void serial_prints() {
         str_H_Date.remove(4, 2);
 
         // <time> <lat> <long> <altitude from pressure sensor> <altitude from GPS>
-        // B 110135 52.06343N 000.06198W A 00587 00558
-        // B 926240 4266453N2340566E AaltBARO 571
         String Header = "APSYCHO SkyView-mod\n";
         Header += "HFDTE" + str_H_Date + "\n";
         Header += "HFFXA050\n";
@@ -138,7 +133,6 @@ void serial_prints() {
         run_once = true;
 
         appendFile(SD, FileName, Header);
-        //Serial.println(ESP.getFreeHeap()/1024);
       }
 
       T_Row = "B";
@@ -152,7 +146,6 @@ void serial_prints() {
       T_Row += GPS_Alt;
       T_Row += GPS_Alt;
       T_Row += "00000";
-
       T_Row += "\n";
 
       appendFile(SD, FileName, T_Row);
