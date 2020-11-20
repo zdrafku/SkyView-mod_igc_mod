@@ -1,7 +1,8 @@
 /*
  * SkyView.h
  * Copyright (C) 2019-2020 Linar Yusupov
- *
+ * Modified by George Georgiev 18.11.2020
+ * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -130,7 +131,8 @@ enum
 {
 	VIEW_MODE_RADAR,
 	VIEW_MODE_TABLE,
-	VIEW_MODE_TEXT
+	VIEW_MODE_TEXT,
+  VIEW_MODE_SDCARD
 };
 
 enum

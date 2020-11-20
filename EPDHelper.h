@@ -73,6 +73,11 @@ void EPD_text_loop();
 void EPD_text_next();
 void EPD_text_prev();
 void EPD_text_Draw_Message(const char *, const char *);
+void EPD_sdcard_setup();
+void EPD_sdcard_loop();
+void EPD_sdcard_next();
+void EPD_sdcard_prev();
+void EPD_sdcard_Draw_Message(const char *, const char *);
 
 extern GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 extern unsigned long EPDTimeMarker;

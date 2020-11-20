@@ -336,6 +336,7 @@ void handleSettings() {
   (settings->units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
   (settings->vmode == VIEW_MODE_RADAR ? "selected" : ""), VIEW_MODE_RADAR,
   (settings->vmode == VIEW_MODE_TEXT  ? "selected" : ""), VIEW_MODE_TEXT,
+  (settings->vmode == VIEW_MODE_SDCARD  ? "selected" : ""), VIEW_MODE_SDCARD,
   (settings->orientation == DIRECTION_TRACK_UP ? "selected" : ""), DIRECTION_TRACK_UP,
   (settings->orientation == DIRECTION_NORTH_UP ? "selected" : ""), DIRECTION_NORTH_UP,
   (settings->zoom == ZOOM_LOWEST ? "selected" : ""), ZOOM_LOWEST,

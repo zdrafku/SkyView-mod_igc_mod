@@ -126,6 +126,8 @@ void parseSettings(JsonObject& root)
       eeprom_block.field.settings.vmode = VIEW_MODE_TABLE;
     } else if (!strcmp(vmode_s,"TEXT")) {
       eeprom_block.field.settings.vmode = VIEW_MODE_TEXT;
+    }else if (!strcmp(vmode_s,"SDCARD")) {
+      eeprom_block.field.settings.vmode = VIEW_MODE_SDCARD;
     }
   }
 

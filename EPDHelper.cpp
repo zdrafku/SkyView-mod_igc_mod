@@ -1,7 +1,7 @@
 /*
  * EPDHelper.cpp
  * Copyright (C) 2019-2020 Linar Yusupov
- *
+ * Modified by George Georgiev (18.Nov.2020)
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -143,6 +143,7 @@ byte EPD_setup(bool splash_screen)
 
   EPD_radar_setup();
   EPD_text_setup();
+  EPD_sdcard_setup();
 
   EPDTimeMarker = millis();
   EPD_anti_ghosting_timer = millis();
@@ -161,6 +162,9 @@ void EPD_loop()
       break;
     case VIEW_MODE_TEXT:
       EPD_text_loop();
+      break;
+    case VIEW_MODE_SDCARD:
+      EPD_sdcard_loop();
       break;
     default:
       break;
@@ -263,6 +267,9 @@ void EPD_Mode()
       EPD_view_mode = VIEW_MODE_TEXT;
       EPD_display_frontpage = false;
     }  else if (EPD_view_mode == VIEW_MODE_TEXT) {
+      EPD_view_mode = VIEW_MODE_SDCARD;
+      EPD_display_frontpage = false;
+    } else if (EPD_view_mode == VIEW_MODE_SDCARD) {
       EPD_view_mode = VIEW_MODE_RADAR;
       EPD_display_frontpage = false;
     }
@@ -279,6 +286,9 @@ void EPD_Up()
       break;
     case VIEW_MODE_TEXT:
       EPD_text_prev();
+      break;
+    case VIEW_MODE_SDCARD:
+      EPD_sdcard_prev();
       break;
     default:
       break;
@@ -297,6 +307,9 @@ void EPD_Down()
     case VIEW_MODE_TEXT:
       EPD_text_next();
       break;
+    case VIEW_MODE_SDCARD:
+     EPD_sdcard_next();
+      break;
     default:
       break;
     }
@@ -312,6 +325,9 @@ void EPD_Message(const char *msg1, const char *msg2)
       EPD_radar_Draw_Message(msg1, msg2);
       break;
     case VIEW_MODE_TEXT:
+      EPD_text_Draw_Message(msg1, msg2);
+      break;
+    case VIEW_MODE_SDCARD:
       EPD_text_Draw_Message(msg1, msg2);
       break;
     default:
