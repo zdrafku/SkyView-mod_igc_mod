@@ -20,28 +20,31 @@
 #include "EPDHelper.h"
 
 #include <Fonts/FreeMonoBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
-#include <Fonts/FreeMono9pt7b.h>
+//#include <Fonts/FreeMonoBold18pt7b.h>
+//#include <Fonts/FreeSans9pt7b.h>
+#include <Fonts/FreeSerif9pt7b.h>
 
-#include "soc/timer_group_struct.h"
-#include "soc/timer_group_reg.h"
+//#include "soc/timer_group_struct.h"
+//#include "soc/timer_group_reg.h"
 
 
-#include "FS.h"
+//#include "FS.h"
 #include "SD.h"
-#include "SPI.h"
-
-#include <TimeLib.h>
+//#include "SPI.h"
+//
+//#include <TimeLib.h>
 
 //#include "TrafficHelper.h"
 //#include "EEPROMHelper.h"
 //#include "NMEAHelper.h"
 //#include "GDL90Helper.h"
 
-#include "SkyView.h"
-#define MAX_FILES 20
+//#include "SkyView.h"
+#define MAX_FILES 15
 #define MAX_FILENAME_SIZE 40
 #define IGC_DIRECTORY "/igc"
+#define TEXT_VIEW_FILE_SPACING 2
+#define TEXT_VIEW_FILE_LENGTH 22
 
 static bool displayed_sd = false;
 //static File current_dir;
@@ -53,121 +56,83 @@ void getFiles(File);
 
 static void EPD_Draw_SDCard()
 {
-  return;
-  char info_line [TEXT_VIEW_LINE_LENGTH];
-  char id_text   [TEXT_VIEW_LINE_LENGTH];
-  
+
+  char info_line [TEXT_VIEW_FILE_LENGTH];
+  char id_text   [TEXT_VIEW_FILE_LENGTH];
+  uint16_t x = 5;
+  uint16_t y = 5;
   
   display->fillScreen(GxEPD_WHITE);
   display->setPartialWindow(0, 0, display->width(), display->height());
-  Serial.println("START DISPLAY");
+  
   display->setFont(&FreeMonoBold12pt7b);
   int16_t  tbx, tby;
   uint16_t tbw, tbh;
-  snprintf(info_line, sizeof(info_line), "FILE LIST");
+  char *initText = "FILE LIST";
+  snprintf(info_line, sizeof(info_line), initText);
   display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-
-  display->setCursor(5, 5+tbh);
+  y+=tbh;
+  display->setCursor(x+20, y);
   display->print(info_line);
-  display->setFont(&FreeMono9pt7b);
-  
-  display->firstPage();
- // return;
-//  do
-//    {
-      uint16_t x = 5;
-      uint16_t y = 5+tbh;
+  Serial.println(info_line);
+  display->setFont(&FreeSerif9pt7b);
+ // display->firstPage();
+  y += TEXT_VIEW_FILE_SPACING*2;
+  x=2;
+  do {
+    
+   //   display->fillScreen(GxEPD_WHITE);
 
-
-
-      display->fillScreen(GxEPD_WHITE);
-
-     
       for(int i =0;i<filesCount;i++){
-
         snprintf(info_line, sizeof(info_line), "%s", files[i]);
         display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
         y += tbh;
         display->setCursor(x, y);
         display->print(info_line);
-  //      Serial.println(info_line);
   
-        y += TEXT_VIEW_LINE_SPACING;
+        y += TEXT_VIEW_FILE_SPACING;
       }
-//      if (oclock == 0) {
-//        strcpy(info_line, "   ahead");
-//      } else {
-//        snprintf(info_line, sizeof(info_line), " %2d o'clock", oclock);
-//      }
-//      display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(info_line);
-////      Serial.println(info_line);
-//
-//      y += TEXT_VIEW_LINE_SPACING;
-//
-//      snprintf(info_line, sizeof(info_line), "%4.1f %s out", disp_dist, u_dist);
-//      display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(info_line);
-////      Serial.println(info_line);
-//
-//      y += TEXT_VIEW_LINE_SPACING;
-//
-//      snprintf(info_line, sizeof(info_line), "%4d %s ", disp_alt, u_alt);
-//
-//      if (traffic[EPD_current - 1].fop->RelativeVertical > 50) {
-//        strcat(info_line, "above");
-//      } else if (traffic[EPD_current - 1].fop->RelativeVertical < -50) {
-//        strcat(info_line, "below");
-//      } else {
-//        strcpy(info_line, "  same alt."); 
-//      }
-//
-//      display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(info_line);
-////      Serial.println(info_line);
-//
-//      y += TEXT_VIEW_LINE_SPACING;
-//
-//      snprintf(info_line, sizeof(info_line), "CoG %3d deg",
-//               traffic[EPD_current - 1].fop->Track);
-//      display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(info_line);
-////      Serial.println(info_line);
-//
-//      y += TEXT_VIEW_LINE_SPACING;
-//
-//      snprintf(info_line, sizeof(info_line), "GS  %3d %s", disp_spd, u_spd);
-//      display->getTextBounds(info_line, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(info_line);
-////      Serial.println(info_line);
-//
-//      y += TEXT_VIEW_LINE_SPACING;
-//
-//      display->getTextBounds(id_text, 0, 0, &tbx, &tby, &tbw, &tbh);
-//      y += tbh;
-//      display->setCursor(x, y);
-//      display->print(id_text);
-////      Serial.println(id_text);
-//
-//      Serial.println();
-//    }
-//    while (display->nextPage());
+    } while (display->nextPage());
 
     display->hibernate();
   
 }
-void addFileToList(char *fileName){
-  Serial.println(filesCount);
+
+void reorderFiles(){
+  //reorder files by name
+  for(int i=0;i<filesCount-1;i++){ 
+    if(strcmp(files[i],files[i+1])<0){
+       char tmp[MAX_FILENAME_SIZE];
+       strcpy(tmp, files[i]);
+       strcpy(files[i],files[i+1]);
+       strcpy(files[i+1], tmp);
+    }
+  }
+}
+
+void addFileToList(char *fileNameOrig){
+  char *ch;
+  char fileName[MAX_FILENAME_SIZE];
+
+  ch =fileNameOrig;
+
+  int i=0;
+  while (*ch) // exits on terminating NULL
+  {
+ 
+    if (*ch >= 65 && *ch <= 90) {
+      fileName[i] =*ch + 32;
+    } else{
+      fileName[i]=*ch;
+    }
+    if(i>5&&fileName[i-3]=='.'&&fileName[i-2]=='i'&&fileName[i-1]=='g'&&fileName[i]=='c')
+       fileName[i-3]=NULL;
+    i++;
+    fileName[i]=NULL;
+    ch++;
+  }
+
+
   if(filesCount ==0){
     strcpy(files[0],fileName);
     filesCount++;
@@ -196,16 +161,8 @@ void addFileToList(char *fileName){
    
     filesCount++;
   }
-  
-  //reorder files by date
-  for(int i=0;i<filesCount;i++){ 
-    if(strcmp(files[i],files[i+1])>0){
-       char tmp[MAX_FILENAME_SIZE];
-       strcpy(tmp, files[i]);
-       strcpy(files[i],files[i+1]);
-       strcpy(files[i+1], tmp);
-    }
-  }
+  yield();
+  reorderFiles();
 
 }
 void getFiles(File dir) {
@@ -250,8 +207,8 @@ void getFiles(File dir) {
       char charFileName[MAX_FILENAME_SIZE];
       tmp.toCharArray(charFileName,MAX_FILENAME_SIZE);
     //  strcpy(charFileName,F(tmp));
-      Serial.print("add:");
-      Serial.println(charFileName);
+//      Serial.print("add:");
+//      Serial.println(charFileName);
       addFileToList(charFileName);
     }
 
@@ -261,6 +218,18 @@ void getFiles(File dir) {
   }
 }
 
+void getInitialFiles(){
+  
+    filesCount =0;
+    File root_dir =SD.open(IGC_DIRECTORY);
+    if(!root_dir){
+       Serial.println("NO FILES->MESSAGE TO DISPLAY");
+       EPD_Message("NO FILES","FOUND");
+       return;
+    }
+    getFiles(root_dir);
+    root_dir.close();
+}
 
 void EPD_sdcard_setup()
 {
@@ -268,74 +237,47 @@ void EPD_sdcard_setup()
 
 void EPD_sdcard_loop()
 {
-
+ 
   if (!EPD_display_frontpage) {
 
     EPD_Clear_Screen();
+    getInitialFiles();
     EPD_display_frontpage = true;
     EPD_Draw_SDCard();
-
-    filesCount =0;
-    File root_dir =SD.open(IGC_DIRECTORY);
-    if(!root_dir){
-       Serial.println("NO FILES->MESSAGE TO DISPLAY");
-       EPD_Message("NO FILES",NULL);
-    }
-    getFiles(root_dir);
-    root_dir.close();
-    Serial.println("STARTING LIST");
-    for(int i=0;i<filesCount;i++){
-       char id_text   [MAX_FILENAME_SIZE+10];
-      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
-      Serial.println(id_text);
-    }
-    Serial.println("END OF LIST");
-
-  } else {
     
-   //  filesCount =0;
-    
+//    Serial.println("STARTING LIST");
+//    for(int i=0;i<filesCount;i++){
+//       char id_text   [MAX_FILENAME_SIZE+10];
+//      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
+//      Serial.println(id_text);
+//    }
+//    Serial.println("END OF LIST");
 
   }
+//  else {
+//    if (filesCount > 0) {
+//            EPD_Draw_SDCard();
+//          } else {
+//            EPD_Message("NO FILES","FOUND");
+//          }
+////     if (isTimeToDisplay()) {
+////          if (filesCount > 0) {
+////            EPD_Draw_SDCard();
+////          } else {
+////             EPD_Message("NO FILES","FOUND");
+////          }
+////      EPDTimeMarker = millis();
+////    }
+//  }
 }
 
 void EPD_sdcard_next()
 {
-    filesCount =0;
-    File root_dir =SD.open(IGC_DIRECTORY);
-    if(!root_dir){
-       Serial.println("NO FILES->MESSAGE TO DISPLAY");
-       EPD_Message("NO FILES",NULL);
-    }
-    for(int i=0;i< MAX_FILES;i++)
-      strcpy(files[i],"");
-    getFiles(root_dir);
-    root_dir.close();
-    Serial.println("STARTING LIST");
-    for(int i=0;i<filesCount;i++){
-       char id_text   [MAX_FILENAME_SIZE+10];
-      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
-      Serial.println(id_text);
-    }
-    Serial.println("END OF LIST");
+   EPD_display_frontpage = false;
 }
 
 void EPD_sdcard_prev()
 {
 
-    filesCount =0;
-    File root_dir =SD.open(IGC_DIRECTORY);
-    if(!root_dir){
-       Serial.println("NO FILES->MESSAGE TO DISPLAY");
-       EPD_Message("NO FILES",NULL);
-    }
-    getFiles(root_dir);
-    root_dir.close();
-    Serial.println("STARTING LIST");
-    for(int i=0;i<filesCount;i++){
-       char id_text   [MAX_FILENAME_SIZE+10];
-      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
-      Serial.println(id_text);
-    }
-    Serial.println("END OF LIST");
+   EPD_display_frontpage = false;
 }
