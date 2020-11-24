@@ -41,7 +41,7 @@ void appendFile(fs::FS &fs, String path, String message) {
 }
 
 String fCheck(fs::FS &fs, String fDate) {
-  String f_Constant = "-PSY-CHO-" + String((SoC->getChipId() & 0xFFFFFF), HEX) + "-";
+  String f_Constant = "-PSY-CHO-"; // + String((SoC->getChipId() & 0xFFFFFF), HEX) + "-";
   String r_Path = "/" + fDate + "/" + fDate + f_Constant;
   char count[2];
 
