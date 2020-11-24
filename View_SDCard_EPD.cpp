@@ -24,6 +24,9 @@
 //#include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSerif9pt7b.h>
 
+#include "esp_task_wdt.h"
+
+
 //#include "soc/timer_group_struct.h"
 //#include "soc/timer_group_reg.h"
 
@@ -60,7 +63,7 @@ static void EPD_Draw_SDCard()
   char info_line [TEXT_VIEW_FILE_LENGTH];
   char id_text   [TEXT_VIEW_FILE_LENGTH];
   uint16_t x = 5;
-  uint16_t y = 5;
+  uint16_t y = 2;
   
   display->fillScreen(GxEPD_WHITE);
   display->setPartialWindow(0, 0, display->width(), display->height());
@@ -77,7 +80,7 @@ static void EPD_Draw_SDCard()
   Serial.println(info_line);
   display->setFont(&FreeSerif9pt7b);
  // display->firstPage();
-  y += TEXT_VIEW_FILE_SPACING*2;
+  y += TEXT_VIEW_FILE_SPACING;
   x=2;
   do {
     
@@ -115,6 +118,8 @@ void addFileToList(char *fileNameOrig){
   char fileName[MAX_FILENAME_SIZE];
 
   ch =fileNameOrig;
+
+  yield();
 
   int i=0;
   while (*ch) // exits on terminating NULL
@@ -161,7 +166,7 @@ void addFileToList(char *fileNameOrig){
    
     filesCount++;
   }
-  yield();
+  esp_task_wdt_reset();
   reorderFiles();
 
 }
@@ -206,15 +211,13 @@ void getFiles(File dir) {
    
       char charFileName[MAX_FILENAME_SIZE];
       tmp.toCharArray(charFileName,MAX_FILENAME_SIZE);
-    //  strcpy(charFileName,F(tmp));
 //      Serial.print("add:");
 //      Serial.println(charFileName);
       addFileToList(charFileName);
     }
 
     entry.close();
-    yield();
-
+  
   }
 }
 
@@ -237,7 +240,7 @@ void EPD_sdcard_setup()
 
 void EPD_sdcard_loop()
 {
- 
+ // esp_task_wdt_delete();
   if (!EPD_display_frontpage) {
 
     EPD_Clear_Screen();
