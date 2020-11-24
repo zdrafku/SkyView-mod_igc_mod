@@ -33,11 +33,22 @@
 #include "GDL90Helper.h"
 
 #include "SkyView.h"
+#define maxof3(a,b,c) (a > b ? (a>c?a:c) : (b>c?b:c))
+#define NAVBOX21_TITLE "VSI"
+#define NAVBOX41_TITLE "ALT"
 
 static navbox_t navbox1;
 static navbox_t navbox2;
+static navbox_t navbox21;
 static navbox_t navbox3;
 static navbox_t navbox4;
+static navbox_t navbox41;
+
+static float deltaAlt;
+static float prevAlt;
+static float deltaSpeed;
+static float prevSpeed;
+static float deltaEnergy;
 
 static int EPD_zoom = ZOOM_MEDIUM;
 
@@ -48,8 +59,8 @@ static void EPD_Draw_NavBoxes()
 
   uint16_t top_navboxes_x = navbox1.x;
   uint16_t top_navboxes_y = navbox1.y;
-  uint16_t top_navboxes_w = navbox1.width + navbox2.width;
-  uint16_t top_navboxes_h = maxof2(navbox1.height, navbox2.height);
+  uint16_t top_navboxes_w = navbox1.width + navbox2.width + navbox21.width;
+  uint16_t top_navboxes_h = maxof3(navbox1.height, navbox2.height, navbox21.height);
 
   display->setPartialWindow(top_navboxes_x, top_navboxes_y,
                             top_navboxes_w, top_navboxes_h);
@@ -65,6 +76,9 @@ static void EPD_Draw_NavBoxes()
                             navbox2.width - 2, navbox2.height - 2,
                             4, GxEPD_BLACK);
 
+  display->drawRoundRect( navbox21.x + 1, navbox21.y + 1,
+                            navbox21.width - 2, navbox21.height - 2,
+                            4, GxEPD_BLACK);
     display->setFont(&Picopixel);
 
     display->getTextBounds(navbox1.title, 0, 0, &tbx, &tby, &tbw, &tbh);
@@ -75,16 +89,24 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox2.x + 5, navbox2.y + 5 + tbh);
     display->print(navbox2.title);
 
-    display->setFont(&FreeMonoBold18pt7b);
+    display->getTextBounds(navbox21.title, 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setCursor(navbox21.x + 5, navbox21.y + 5 + tbh);
+    display->print(navbox21.title);
 
-    display->setCursor(navbox1.x + 40, navbox1.y + 32);
+    display->setFont(&FreeSerifBold12pt7b);
+
+    display->setCursor(navbox1.x + 8, navbox1.y + 33);
     display->print(navbox1.value);
 
     display->setFont(&FreeSerifBold12pt7b);
 
-    display->setCursor(navbox2.x + 8, navbox2.y + 30);
-    display->print(navbox2.value == PROTOCOL_NMEA  ? "NMEA" :
-                   navbox2.value == PROTOCOL_GDL90 ? " GDL" : " UNK" );
+    display->setCursor(navbox2.x + 8, navbox2.y + 33);
+    display->print(navbox2.value == PROTOCOL_NMEA  ? "N" :
+                   navbox2.value == PROTOCOL_GDL90 ? "G" : "*" );
+
+    display->setFont(&FreeMonoBold18pt7b);
+    display->setCursor(navbox21.x + 6, navbox21.y + 36);
+    display->print("+0.0");
   }
   while (display->nextPage());
 
@@ -95,8 +117,8 @@ static void EPD_Draw_NavBoxes()
 
   uint16_t bottom_navboxes_x = navbox3.x;
   uint16_t bottom_navboxes_y = navbox3.y;
-  uint16_t bottom_navboxes_w = navbox3.width + navbox4.width;
-  uint16_t bottom_navboxes_h = maxof2(navbox3.height, navbox4.height);
+  uint16_t bottom_navboxes_w = navbox3.width + navbox4.width+navbox41.width;
+  uint16_t bottom_navboxes_h = maxof3(navbox3.height, navbox4.height,navbox41.height);
 
 
   display->setPartialWindow(bottom_navboxes_x, bottom_navboxes_y,
@@ -111,6 +133,9 @@ static void EPD_Draw_NavBoxes()
     display->drawRoundRect( navbox4.x + 1, navbox4.y + 1,
                             navbox4.width - 2, navbox4.height - 2,
                             4, GxEPD_BLACK);
+    display->drawRoundRect( navbox41.x + 1, navbox41.y + 1,
+                            navbox41.width - 2, navbox41.height - 2,
+                            4, GxEPD_BLACK);
 
     display->setFont(&Picopixel);
 
@@ -122,26 +147,35 @@ static void EPD_Draw_NavBoxes()
     display->setCursor(navbox4.x + 5, navbox4.y + 5 + tbh);
     display->print(navbox4.title);
 
-    display->setFont(&FreeSerifBold12pt7b);
+    display->getTextBounds(navbox41.title, 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setCursor(navbox41.x + 5, navbox41.y + 5 + tbh);
+    display->print(navbox41.title);
 
-    display->setCursor(navbox3.x + 10, navbox3.y + 30);
+    display->setFont(&FreeMonoBold9pt7b);
+
+    display->setCursor(navbox3.x + 8, navbox3.y + 30);
 
     if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
-      display->print(navbox3.value == ZOOM_LOWEST ? "20 KM" :
-                     navbox3.value == ZOOM_LOW    ? "10 KM" :
-                     navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
-                     navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
+      display->print(navbox3.value == ZOOM_LOWEST ? "20" :
+                     navbox3.value == ZOOM_LOW    ? "10" :
+                     navbox3.value == ZOOM_MEDIUM ? " 4" :
+                     navbox3.value == ZOOM_HIGH   ? " 2" : "");
     } else {
-      display->print(navbox3.value == ZOOM_LOWEST ? "10 NM" :
-                     navbox3.value == ZOOM_LOW    ? " 5 NM" :
-                     navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
-                     navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
+      display->print(navbox3.value == ZOOM_LOWEST ? "10" :
+                     navbox3.value == ZOOM_LOW    ? " 5" :
+                     navbox3.value == ZOOM_MEDIUM ? " 2" :
+                     navbox3.value == ZOOM_HIGH   ? " 1" : "");
     }
 
-    display->setFont(&FreeMonoBold18pt7b);
+    display->setFont(&FreeMonoBold9pt7b);
 
-    display->setCursor(navbox4.x + 15, navbox4.y + 32);
-    display->print((float) navbox4.value / 10);
+    display->setCursor(navbox4.x + 5, navbox4.y + 30);
+    display->print((float) navbox4.value / 10,1);
+
+    display->setFont(&FreeMonoBold18pt7b);
+    display->setCursor(navbox41.x + 8, navbox41.y + 36);
+  //  navbox41.value = 9999;
+    display->print( navbox41.value );
   }
   while (display->nextPage());
 
@@ -450,16 +484,18 @@ static void EPD_Update_NavBoxes()
 
   if (navbox1.value != navbox1.prev_value) {
 
-    display->setFont(&FreeMonoBold18pt7b);
+    display->setFont(&FreeSerifBold12pt7b);
     display->getTextBounds("00", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox1.x + 40, navbox1.y + 33 - tbh,
+    display->setPartialWindow(navbox1.x+8, navbox1.y + 33 - tbh,
                               tbw, tbh + 1);
     display->firstPage();
     do
     {
-      display->fillRect(navbox1.x + 40, navbox1.y + 33 - tbh,
+      display->fillRect(navbox1.x + 8, navbox1.y + 33 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox1.x + 40, navbox1.y + 32);
+      display->setCursor(navbox1.x +8, navbox1.y + 33);
+      if(navbox1.value<10)
+          display->print(" ");
       display->print(navbox1.value);
     }
     while (display->nextPage());
@@ -470,46 +506,75 @@ static void EPD_Update_NavBoxes()
   if (navbox2.value != navbox2.prev_value) {
 
     display->setFont(&FreeSerifBold12pt7b);
-    display->getTextBounds("NMEA", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox2.x + 8, navbox2.y + 31 - tbh,
+    display->getTextBounds("G", 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setPartialWindow(navbox2.x + 6, navbox2.y + 33 - tbh,
                               tbw, tbh + 1);
     display->firstPage();
     do
     {
-      display->fillRect(navbox2.x + 8, navbox2.y + 31 - tbh,
+      display->fillRect(navbox2.x + 6, navbox2.y + 33 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox2.x + 8, navbox2.y + 30);
-      display->print(navbox2.value == PROTOCOL_NMEA  ? "NMEA" :
-                     navbox2.value == PROTOCOL_GDL90 ? " GDL" : " UNK" );
+      display->setCursor(navbox2.x + 6, navbox2.y + 33);
+      display->print(navbox2.value == PROTOCOL_NMEA  ? "N" :
+                     navbox2.value == PROTOCOL_GDL90 ? "G" : "*" );
     }
     while (display->nextPage());
 
     navbox2.prev_value = navbox2.value;
   }
 
+
+  if (navbox21.value != navbox21.prev_value) {
+
+    display->setFont(&FreeMonoBold18pt7b);
+    display->getTextBounds("-0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    display->setPartialWindow(navbox21.x + 9, navbox21.y + 36 - tbh,
+                              tbw-4, tbh+2);
+    display->firstPage();
+    do
+    {
+      if(navbox21.value<0){
+        display->fillRect(navbox21.x + 5, navbox21.y + 36 - tbh,
+          tbw+2, tbh+2, GxEPD_BLACK);
+          display->setTextColor(GxEPD_WHITE);
+      }
+      else
+        display->fillRect(navbox21.x + 5, navbox21.y + 36 - tbh,
+          tbw+2, tbh+2,  GxEPD_WHITE);
+
+      display->setCursor(navbox21.x + 5, navbox21.y + 36);
+      if(navbox21.value>=0) display->print("+");
+      display->print((float)navbox21.value/10,1);
+    }
+    while (display->nextPage());
+    display->setTextColor(GxEPD_BLACK);
+    navbox21.prev_value = navbox21.value;
+  }
+
   if (navbox3.value != navbox3.prev_value) {
 
-    display->setFont(&FreeSerifBold12pt7b);
-    display->getTextBounds("10 KM", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox3.x + 11, navbox3.y + 31 - tbh,
+    display->setFont(&FreeMonoBold9pt7b);
+    display->getTextBounds("20", 0, 0, &tbx, &tby, &tbw, &tbh);
+    display->setPartialWindow(navbox3.x + 8, navbox3.y + 30 - tbh,
                               tbw, tbh + 1);
     display->firstPage();
     do
     {
-      display->fillRect(navbox3.x + 10, navbox3.y + 31 - tbh,
+      display->fillRect(navbox3.x + 8, navbox3.y + 30 - tbh,
                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox3.x + 10, navbox3.y + 30);
+      display->setCursor(navbox3.x + 8, navbox3.y + 30);
 
       if (settings->units == UNITS_METRIC || settings->units == UNITS_MIXED) {
-        display->print(navbox3.value == ZOOM_LOWEST ? "20 KM" :
-                       navbox3.value == ZOOM_LOW    ? "10 KM" :
-                       navbox3.value == ZOOM_MEDIUM ? " 4 KM" :
-                       navbox3.value == ZOOM_HIGH   ? " 2 KM" : "");
+        display->print(navbox3.value == ZOOM_LOWEST ? "20" :
+                       navbox3.value == ZOOM_LOW    ? "10" :
+                       navbox3.value == ZOOM_MEDIUM ? " 4" :
+                       navbox3.value == ZOOM_HIGH   ? " 2" : "");
       } else {
-        display->print(navbox3.value == ZOOM_LOWEST ? "10 NM" :
-                       navbox3.value == ZOOM_LOW    ? " 5 NM" :
-                       navbox3.value == ZOOM_MEDIUM ? " 2 NM" :
-                       navbox3.value == ZOOM_HIGH   ? " 1 NM" : "");
+        display->print(navbox3.value == ZOOM_LOWEST ? "10" :
+                       navbox3.value == ZOOM_LOW    ? " 5" :
+                       navbox3.value == ZOOM_MEDIUM ? " 2" :
+                       navbox3.value == ZOOM_HIGH   ? " 1" : "");
       }
     }
     while (display->nextPage());
@@ -519,21 +584,47 @@ static void EPD_Update_NavBoxes()
 
   if (navbox4.value != navbox4.prev_value) {
 
-    display->setFont(&FreeMonoBold18pt7b);
+    display->setFont(&FreeMonoBold9pt7b);
     display->getTextBounds("0.0", 0, 0, &tbx, &tby, &tbw, &tbh);
-    display->setPartialWindow(navbox4.x + 16, navbox4.y + 33 - tbh,
+    display->setPartialWindow(navbox4.x + 6, navbox4.y + 30 - tbh,
                               tbw, tbh + 1);
     display->firstPage();
     do
     {
-      display->fillRect (navbox4.x + 15, navbox4.y + 33 - tbh,
-                         tbw, tbh + 1, GxEPD_WHITE);
-      display->setCursor(navbox4.x + 15, navbox4.y + 32);
-      display->print((float) navbox4.value / 10);
+      display->fillRect (navbox4.x + 6, navbox4.y + 30 - tbh,
+                         tbw-5, tbh + 1, GxEPD_WHITE);
+      display->setCursor(navbox4.x + 6, navbox4.y + 30);
+      display->print((float) navbox4.value / 10,1);
     }
     while (display->nextPage());
 
     navbox4.prev_value = navbox4.value;
+  }
+
+   if (navbox41.value != navbox41.prev_value) {
+    display->setFont(&FreeMonoBold18pt7b);
+    display->getTextBounds("0000", 0, 0, &tbx, &tby, &tbw, &tbh);
+
+    display->setPartialWindow(navbox41.x + 9, navbox41.y + 36 - tbh,
+                              tbw-4, tbh+2);
+    display->firstPage();
+    do
+    {
+      display->fillRect(navbox41.x + 5, navbox41.y + 36 - tbh,
+        tbw+2, tbh+2,  GxEPD_WHITE);
+
+      display->setCursor(navbox41.x + 5, navbox41.y + 36);
+      if(navbox41.value<10)
+         display->print(" ");
+      if(navbox41.value<100)
+         display->print(" ");
+      if(navbox41.value<1000)
+         display->print(" ");
+      display->print(navbox41.value);
+    }
+    while (display->nextPage());
+    display->setTextColor(GxEPD_BLACK);
+    navbox41.prev_value = navbox41.value;
   }
 
   display->hibernate();
@@ -550,7 +641,7 @@ void EPD_radar_setup()
   memcpy(navbox1.title, NAVBOX1_TITLE, strlen(NAVBOX1_TITLE));
   navbox1.x = 0;
   navbox1.y = 0;
-  navbox1.width  = display->width() / 2;
+  navbox1.width  = display->width() / 3.5;
   navbox1.height = (display->height() - display->width()) / 2;
   navbox1.value      = 0;
   navbox1.prev_value = navbox1.value;
@@ -559,16 +650,25 @@ void EPD_radar_setup()
   memcpy(navbox2.title, NAVBOX2_TITLE, strlen(NAVBOX2_TITLE));
   navbox2.x = navbox1.width;
   navbox2.y = navbox1.y;
-  navbox2.width  = navbox1.width;
+  navbox2.width  =display->width() / 6;
   navbox2.height = navbox1.height;
   navbox2.value      = PROTOCOL_NONE;
   navbox2.prev_value = navbox2.value;
   navbox2.timestamp  = millis();
 
+  memcpy(navbox21.title, NAVBOX21_TITLE, strlen(NAVBOX21_TITLE));
+  navbox21.x = navbox1.width+navbox2.width;
+  navbox21.y = navbox1.y;
+  navbox21.width  =display->width() - navbox1.width - navbox2.width;
+  navbox21.height = navbox1.height;
+  navbox21.value      = 0;
+  navbox21.prev_value = navbox21.value;
+  navbox21.timestamp  = millis();
+
   memcpy(navbox3.title, NAVBOX3_TITLE, strlen(NAVBOX3_TITLE));
   navbox3.x = 0;
   navbox3.y = radar_y + radar_w;
-  navbox3.width  = navbox1.width;
+  navbox3.width  = display->width()/5;
   navbox3.height = navbox1.height;
   navbox3.value      = EPD_zoom;
   navbox3.prev_value = navbox3.value;
@@ -577,11 +677,20 @@ void EPD_radar_setup()
   memcpy(navbox4.title, NAVBOX4_TITLE, strlen(NAVBOX4_TITLE));
   navbox4.x = navbox3.width;
   navbox4.y = navbox3.y;
-  navbox4.width  = navbox3.width;
+  navbox4.width  = navbox3.width+10;
   navbox4.height = navbox3.height;
   navbox4.value      = (int) (Battery_voltage() * 10.0);
   navbox4.prev_value = navbox4.value;
   navbox4.timestamp  = millis();
+
+  memcpy(navbox41.title, NAVBOX41_TITLE, strlen(NAVBOX41_TITLE));
+  navbox41.x = navbox3.width+navbox4.width;
+  navbox41.y = navbox3.y;
+  navbox41.width  =display->width() - navbox3.width - navbox4.width;
+  navbox41.height = navbox3.height;
+  navbox41.value      = ThisAircraft.altitude;
+  navbox41.prev_value = navbox41.value;
+  navbox41.timestamp  = millis();
 }
 
 void EPD_radar_loop()
@@ -625,6 +734,8 @@ void EPD_radar_loop()
       yield();
 
       navbox1.value = Traffic_Count();
+//      navbox1.value += 9;
+      if(navbox1.value>99) navbox1.value = 99;
 
       switch (settings->protocol)
       {
@@ -639,8 +750,25 @@ void EPD_radar_loop()
         break;
       }
 
+      // compensate Vario
+      deltaAlt = ThisAircraft.altitude - prevAlt;
+      prevAlt = ThisAircraft.altitude;
+      deltaSpeed = ThisAircraft.GroundSpeed - prevSpeed;
+      deltaSpeed = deltaSpeed/3.6; // convert to m/s
+      prevSpeed = ThisAircraft.GroundSpeed;
+      
+      deltaEnergy = deltaAlt - deltaSpeed*deltaSpeed/(2*9.780327);
+      if(deltaEnergy>9.9) deltaEnergy = 9.9;
+      if(deltaEnergy<-9.9) deltaEnergy = -9.9;
+
+      navbox21.value=deltaEnergy;
+       
       navbox3.value = EPD_zoom;
       navbox4.value = (int) (Battery_voltage() * 10.0);
+
+      navbox41.value = ThisAircraft.altitude;
+      
+
 
       EPD_Update_NavBoxes();
 

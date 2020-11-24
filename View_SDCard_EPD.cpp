@@ -122,9 +122,16 @@ void addFileToList(char *fileNameOrig){
   yield();
 
   int i=0;
+  int minusChar =0;
   while (*ch) // exits on terminating NULL
   {
- 
+    if(minusChar<2){
+      if(*ch=='-'){
+        minusChar++;
+        ch++;
+        continue;
+      }
+    }
     if (*ch >= 65 && *ch <= 90) {
       fileName[i] =*ch + 32;
     } else{
