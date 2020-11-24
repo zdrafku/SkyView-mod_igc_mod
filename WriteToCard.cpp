@@ -26,9 +26,9 @@ void appendFile(fs::FS &fs, String path, String message) {
   File file = fs.open(path, FILE_APPEND);
   if (!file) {
     //Serial.println("Failed to open file for appending" + path);
-    //Serial.print("Would appended message to file: ");
-    //Serial.println(path);
-    //Serial.println(message);
+    Serial.print("Would appended message to file: ");
+    Serial.println(path);
+    Serial.println(message);
     file.close();
     return;
   }
@@ -42,22 +42,27 @@ void appendFile(fs::FS &fs, String path, String message) {
 
 String fCheck(fs::FS &fs, String fDate) {
   String f_Constant = "-PSY-CHO-"; // + String((SoC->getChipId() & 0xFFFFFF), HEX) + "-";
-  String r_Path = "/" + fDate + "/" + fDate + f_Constant;
+  //String r_Path = "/" + fDate + "/" + fDate + f_Constant;
+  String r_Path = IGC_DIRECTORY;
+  r_Path += "/" + fDate + f_Constant;
   char count[2];
 
-  fs.mkdir("/" + fDate);
+  //fs.mkdir("/" + fDate);
+  fs.mkdir(IGC_DIRECTORY);
 
-  File root_dir = fs.open("/" + fDate);
+  //File root_dir = fs.open("/" + fDate);
+  File root_dir = fs.open(IGC_DIRECTORY);
   File list = root_dir.openNextFile();
   int c = 0;
   while (list) {
     String file_name = list.name();
-    String f_count = file_name.substring(38, 40);
+    String f_count = file_name.substring(r_Path.length(), r_Path.length()+2);
     if ( file_name.indexOf(r_Path) == 0 ) {
       if ( f_count.toInt() > 0 && f_count.toInt() > c) {
         c = f_count.toInt();
       }
     }
+    esp_task_wdt_reset();
     list = root_dir.openNextFile();
   }
   root_dir.close();
@@ -75,6 +80,7 @@ void serial_prints() {
 
     if (isValidGNSSFix()) {
       Record = CurrentTime - NoSpeed;
+
       if ( (int)nmea.speed.kmph() < MIN_SPEED ) {
         if ( run_once && KEEP_ALIVE < Record ) {
           Serial.print("Will start new .IGC file and reset RECORD with speed: ");
@@ -87,6 +93,7 @@ void serial_prints() {
           return;
         }
       }
+
       Serial.print("Resetting RECORD: ");
       Serial.println(Record/1000);
       Record = 0;
@@ -155,48 +162,3 @@ void serial_prints() {
     ElapsedTime = 0;
   }
 }
-
-/*
-
-String readFile(fs::FS &fs, const char *path, String delimiter) {
-  //Serial.printf("Reading file: %s\n", path);
-
-  File conf_file = fs.open(path);
-  if(!conf_file) {
-    //Serial.println("Failed to open file for reading");
-    conf_file.close();
-    return "";
-  }
-
-  //Serial.print("Read from file: ");
-  String Config_Line;
-  String Line_Parse;
-  while(conf_file.available()) {
-    Config_Line = conf_file.readStringUntil('\n');
-    if ( Config_Line.indexOf(delimiter) == 0 ) {
-      Config_Line.replace(delimiter, "");
-      conf_file.close();
-      return Config_Line;
-    }
-
-    //Serial.println(Config_Line.indexOf(delimiter));
-    //Serial.println(Config_Line);
-  }
-  conf_file.close();
-}
-
-#define DEFAULT_G_PILOT         "Pilot in command"
-#define DEFAULT_G_CREW          "Instructor"
-#define DEFAULT_G_TYPE          "Pilot in command"
-#define DEFAULT_G_REGISTRATION  "LZ-XXX"
-  strcpy(eeprom_block.field.settings.glider_pilot,    DEFAULT_G_PILOT);
-  strcpy(eeprom_block.field.settings.glider_crew,    DEFAULT_G_CREW);
-  strcpy(eeprom_block.field.settings.glider_type,    DEFAULT_G_TYPE);
-  strcpy(eeprom_block.field.settings.glider_registration,    DEFAULT_G_REGISTRATION);
-
-for (int i=0; i<sizeof(eeprom_t); i++) {
-  EEPROM.write(i, glider_settings.raw[i]);
-}
-
-EEPROM.commit();
- */

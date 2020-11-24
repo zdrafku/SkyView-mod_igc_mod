@@ -19,6 +19,8 @@
 #include "SD.h"
 #include "SPI.h"
 #include "TinyGPS++.h"
+#include "esp_task_wdt.h"
+
 
 #define isValidGNSSFix()  ( nmea.location.isValid()               && \
                             nmea.altitude.isValid()               && \
