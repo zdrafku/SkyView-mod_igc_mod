@@ -101,25 +101,34 @@ static void EPD_Draw_SDCard()
   
 }
 
-void reorderFiles(){
-  //reorder files by name
-  for(int i=0;i<filesCount-1;i++){ 
-    if(strcmp(files[i],files[i+1])<0){
-       char tmp[MAX_FILENAME_SIZE];
-       strcpy(tmp, files[i]);
-       strcpy(files[i],files[i+1]);
-       strcpy(files[i+1], tmp);
-    }
+int getFilePosition(char *fileName){
+  int filePlace =0;
+  for(int i=0; i< filesCount;i++){ 
+     
+    filePlace = i;
+    if(fileName==files[i])
+      return -1;
+
+    if(strcmp(fileName,files[i])>0)
+      return filePlace;
   }
+  return filePlace;
 }
 
-void addFileToList(char *fileNameOrig){
+void putFileOnPosition(char *fileName, int filePlace){
+  if(filePlace<0) return;
+  for(int i=MAX_FILES-2; i>=filePlace;i--) strcpy(files[i+1],files[i]);
+  strcpy(files[filePlace],fileName);
+    
+  if(filesCount<MAX_FILES)
+    filesCount++;  
+}
+
+char*  shortenFileName(char *fileNameOrig){
   char *ch;
-  char fileName[MAX_FILENAME_SIZE];
+  static char fileName[MAX_FILENAME_SIZE];
 
   ch =fileNameOrig;
-
-  yield();
 
   int i=0;
   int minusChar =0;
@@ -143,53 +152,31 @@ void addFileToList(char *fileNameOrig){
     fileName[i]=NULL;
     ch++;
   }
-
+  return fileName;
+}
+void addFileToList(char *fileNameOrig){
+  char fileName[MAX_FILENAME_SIZE];
+  snprintf(fileName, sizeof(fileName), "%s",shortenFileName(fileNameOrig));
+  
 
   if(filesCount ==0){
     strcpy(files[0],fileName);
     filesCount++;
     return;
   }
-  int filePlace =0;
-  for(int i=0; i< filesCount;i++){ 
-     
-    filePlace = i;
-    if(fileName==files[i])
-      return;
-
-    if(strcmp(fileName,files[i])>0)
-      break;
-  }
-  if(filePlace>filesCount)
-     return;
-  if(filesCount>=MAX_FILES){
-    strcpy(files[MAX_FILES-1],fileName);
-  } else{
-    // adding place at sorting place
-    for(int i=MAX_FILES-2; i>=filePlace;i--)
-      strcpy(files[i+1],files[i]);
-
-    strcpy(files[filePlace],fileName);
-   
-    filesCount++;
-  }
+  int filePlace =getFilePosition(fileName);
+  
+  putFileOnPosition(fileName,filePlace);
   esp_task_wdt_reset();
-  reorderFiles();
+//  reorderFiles();
 
 }
 void getFiles(File dir) {
-//  Serial.println(F("GETTING FILES..."));
-//   for(int i=0;i<filesCount;i++)
-//      Serial.println(i+"->"+files[i]);
+
   while (true) {
 
     File entry =  dir.openNextFile();
-   // current_dir = entry;
-    
-//    if(filesCount>MAX_FILES-1){
-//       entry.close();
-//       return;
-//    }
+
     if (! entry ){
       if( dir.name()==IGC_DIRECTORY&&filesCount==0) {
        Serial.println("NO FILES");
