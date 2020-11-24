@@ -34,9 +34,10 @@ GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 
 const char EPD_SkyView_text1[] = "Sky View";
 const char EPD_SkyView_text2[] = "v.20201124";
-const char EPD_SkyView_text21[] = "Mr. Psycho";
-const char EPD_SkyView_text22[] = "&";
-const char EPD_SkyView_text23[] = "GIG";
+const char EPD_SkyView_text21[] = "mod by:";
+const char EPD_SkyView_text22[] = "Mr.Psycho";
+const char EPD_SkyView_text23[] = "&";
+const char EPD_SkyView_text24[] = "GIG";
 const char EPD_SkyView_text3[] = "Presented by";
 const char EPD_SkyView_text4[] = "SoftRF project";
 const char EPD_SkyView_text5[] = "and LilyGO";
@@ -101,7 +102,7 @@ byte EPD_setup(bool splash_screen)
     {
       display->fillScreen(GxEPD_WHITE);
       uint16_t x = (display->width() - tbw1) / 2;
-      uint16_t y = 40 + tbh1;
+      uint16_t y = 20 + tbh1;
       display->setCursor(x, y);
       display->print(EPD_SkyView_text1);
       x = (display->width() - tbw2) / 2;
@@ -113,23 +114,31 @@ byte EPD_setup(bool splash_screen)
       display->getTextBounds(EPD_SkyView_text21, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
       x = (display->width() - tbw2) / 2;
      // y = (display->height() + tbh2) / 2;
-      y+=(2+tbh2);
+      y+=(8+tbh2);
       display->setCursor(x, y );
       display->print(EPD_SkyView_text21);
       
       display->getTextBounds(EPD_SkyView_text22, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
       x = (display->width() - tbw2) / 2;
      // y = (display->height() + tbh2) / 2;
-      y+=(2+tbh2);
+      y+=(8+tbh2);
       display->setCursor(x, y );
       display->print(EPD_SkyView_text22);
       
       display->getTextBounds(EPD_SkyView_text23, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
       x = (display->width() - tbw2) / 2;
      // y = (display->height() + tbh2) / 2;
-      y+=(2+tbh2);
+      y+=(8+tbh2);
       display->setCursor(x, y );
       display->print(EPD_SkyView_text23);
+      
+      
+      display->getTextBounds(EPD_SkyView_text24, 0, 0, &tbx2, &tby2, &tbw2, &tbh2);
+      x = (display->width() - tbw2) / 2;
+     // y = (display->height() + tbh2) / 2;
+      y+=(8+tbh2);
+      display->setCursor(x, y );
+      display->print(EPD_SkyView_text24);
       // ********** END OF MOD **********************
 
       display->setFont(&FreeMonoOblique9pt7b);
