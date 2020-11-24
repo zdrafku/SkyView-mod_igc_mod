@@ -34,7 +34,7 @@ GxEPD2_BW<GxEPD2_270, GxEPD2_270::HEIGHT> *display;
 
 const char EPD_SkyView_text1[] = "Sky View";
 const char EPD_SkyView_text2[] = "v.20201124";
-const char EPD_SkyView_text21[] = "PsyCho";
+const char EPD_SkyView_text21[] = "Mr. Psycho";
 const char EPD_SkyView_text22[] = "&";
 const char EPD_SkyView_text23[] = "GIG";
 const char EPD_SkyView_text3[] = "Presented by";
