@@ -30,6 +30,7 @@
 #define WAIT_TIME       4500  /* 4.5 seconds */
 #define KEEP_ALIVE      20000 /* 60 seconds */
 #define MIN_SPEED       20    /* 20km/h */
+#define IGC_DIRECTORY "/igc"
 
 void serial_prints();
 

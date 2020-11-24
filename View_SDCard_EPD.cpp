@@ -26,34 +26,18 @@
 
 #include "esp_task_wdt.h"
 
-
-//#include "soc/timer_group_struct.h"
-//#include "soc/timer_group_reg.h"
-
-
-//#include "FS.h"
+#include "writetocard.h"
 #include "SD.h"
-//#include "SPI.h"
-//
-//#include <TimeLib.h>
 
-//#include "TrafficHelper.h"
-//#include "EEPROMHelper.h"
-//#include "NMEAHelper.h"
-//#include "GDL90Helper.h"
-
-//#include "SkyView.h"
 #define MAX_FILES 15
 #define MAX_FILENAME_SIZE 40
-#define IGC_DIRECTORY "/igc"
 #define TEXT_VIEW_FILE_SPACING 2
 #define TEXT_VIEW_FILE_LENGTH 22
 
 static bool displayed_sd = false;
-//static File current_dir;
+
 static int filesCount = 0;
-//static int currentFile=0;
-//static int startViewFile =0;
+
 char  files [MAX_FILES] [MAX_FILENAME_SIZE] ;
 void getFiles(File);
 
