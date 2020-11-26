@@ -2,6 +2,7 @@
  * SkyView(.ino) firmware
  * Copyright (C) 2019-2020 Linar Yusupov
  * Modified by Mr. Psycho <github@psychotm.info>
+ *    and George Georgiev <georgiev69@gmail.com>
  *
  * This firmware is essential part of the SoftRF project.
  *

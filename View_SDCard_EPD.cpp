@@ -1,6 +1,6 @@
 /*
  * View_SDCard_EPD.cpp
- * Copyright (C) 2019-2020 Linar Yusupov
+
  * Created by George Georgiev
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,9 +20,8 @@
 #include "EPDHelper.h"
 
 #include <Fonts/FreeMonoBold12pt7b.h>
-//#include <Fonts/FreeMonoBold18pt7b.h>
-//#include <Fonts/FreeSans9pt7b.h>
 #include <Fonts/FreeSerif9pt7b.h>
+#include "WiFiUpload.h"
 
 #include "esp_task_wdt.h"
 
@@ -226,13 +225,13 @@ void EPD_sdcard_loop()
     EPD_display_frontpage = true;
     EPD_Draw_SDCard();
     
-//    Serial.println("STARTING LIST");
-//    for(int i=0;i<filesCount;i++){
-//       char id_text   [MAX_FILENAME_SIZE+10];
-//      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
-//      Serial.println(id_text);
-//    }
-//    Serial.println("END OF LIST");
+    Serial.println("STARTING FILES LIST");
+    for(int i=0;i<filesCount;i++){
+       char id_text   [MAX_FILENAME_SIZE+10];
+      snprintf(id_text, sizeof(id_text), "%2d - %s",i,files[i]);
+      Serial.println(id_text);
+    }
+    Serial.println("END OF LIST");
 
   }
 //  else {
@@ -254,11 +253,13 @@ void EPD_sdcard_loop()
 
 void EPD_sdcard_next()
 {
-   EPD_display_frontpage = false;
+  Serial.println("REFRESH OF FILE LIST ACTIVATED");
+  EPD_display_frontpage = false;
 }
 
 void EPD_sdcard_prev()
 {
-
-   EPD_display_frontpage = false;
+  Serial.println("IGC FILES UPLOAD ACTIVATED");
+  IGC_Upload();
+  EPD_display_frontpage = false;
 }
