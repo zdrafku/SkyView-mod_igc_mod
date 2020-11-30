@@ -262,6 +262,7 @@ void handleSettings() {
 <select name='vmode'>\
 <option %s value='%d'>radar</option>\
 <option %s value='%d'>text</option>\
+<option %s value='%d'>File List</option>\
 </select>\
 </td>\
 </tr>\
