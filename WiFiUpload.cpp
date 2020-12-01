@@ -33,27 +33,34 @@ void uWiFi_setup() {
 bool Upload_to_API(String uFile) {
 
   WiFiClient client;
-  //const char* host =  "log.my-domain.com";
-  const char* host =  "192.168.1.15";
-  //String URI =        "/importigc";
-  String URI =        "/files/post.php";
+  const char* host =  "log.my-domain.com";
+  //const char* host =  "192.168.1.15";
+  String URI =        "/importigc";
+  //String URI =        "/files/post.php";
   String fe_user =    "WEB USER";
   String fe_pass =    "WEB PASS";
   String import_uid = "WEB uID";
 
-  //const int httpPort = 80;
-  const int httpPort = 12312;
+  const int httpPort = 80;
+  //const int httpPort = 12312;
   if (!client.connect(host, httpPort)) {
     Serial.println("Remote connection failed");
     return false;
   }
-  auto upload_file = SD.open(IGC_DIRECTORY + uFile, FILE_READ);
+
+  auto upload_file = SD.open(uFile, FILE_READ);
   const auto upload_size = upload_file.size();
 
+  Serial.print("upload_file.name: ");
+  Serial.println(upload_file.name());
+  Serial.print("upload_size: ");
+  Serial.println(upload_size);
   if ( upload_size < 1) return false;
   String file_line;
   while(upload_file.available()) {
+    esp_task_wdt_reset();
     file_line += upload_file.readStringUntil('\r');
+    esp_task_wdt_reset();
   }
   upload_file.close();
 
@@ -73,6 +80,7 @@ bool Upload_to_API(String uFile) {
   request_body += "\r\n------WebKitFormBoundaryjg2qVIUS8teOAbN3\r\n";
   request_body += "Content-Disposition: form-data; name=\"importigc_igc\"; filename=\"";
   uFile.replace(IGC_DIRECTORY, "");
+  uFile.replace("/", "");
   request_body += uFile;
   request_body += "\"\r\n"; // file name
   request_body += "Content-Type: application/octet-stream\r\n";
@@ -90,6 +98,7 @@ bool Upload_to_API(String uFile) {
   client.println("Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryjg2qVIUS8teOAbN3");
   //client.println("Content-Type: application/x-www-form-urlencoded");
   client.print("Content-Length: ");           //file size  //change it
+  esp_task_wdt_reset();
   client.println(request_body.length());
   client.println(request_body);
 
@@ -129,7 +138,6 @@ void listDir(String root_path, bool debug) {
   File file = root.openNextFile();
   while (file) {
     // check for folders starting with 202 (i.e 2020-11-22)
-    Serial.println(file.name());
     if (file.isDirectory()) continue;
     if ( /*String(file.name()).indexOf("202") == 0 &&*/ String(file.name()).endsWith(".igc")) {
       if (debug) Serial.println("UPLOAD: " + root_path + file.name());
@@ -139,14 +147,13 @@ void listDir(String root_path, bool debug) {
       line_3 = line_2;
       line_2 = line_1;
       line_1 = file.name();
+      esp_task_wdt_reset();
       line_1 += Upload_to_API(file.name())? "*" : "-";
 
       // every file with full name
-      line_1.replace("PSY-CHO-", "");
       line_1.replace(".igc", "");
+      esp_task_wdt_reset();
 
-      Serial.print("Uploading file: ");
-      Serial.println(line_1);
 //      // every file (short name) in directory
 //      display.clearDisplay();
 //
@@ -172,16 +179,18 @@ void listDir(String root_path, bool debug) {
 
       //delay(1000);
     }
-//    esp_task_wdt_reset();
+    esp_task_wdt_reset();
     file = root.openNextFile();
   }
+  file.close();
+  root.close();
 }
 
 void IGC_Upload(){
   uWiFi_setup();
-  //listDir(IGC_DIRECTORY, false);
+  listDir(IGC_DIRECTORY, false);
 
-  Upload_to_API("/igc/2020-11-15-PSY-CHO-21.igc");
+  //Upload_to_API("/igc/2020-11-15-PSY-CHO-21.igc");
 
   WiFi_setup();
   return;
