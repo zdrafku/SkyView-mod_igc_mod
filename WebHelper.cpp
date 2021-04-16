@@ -247,6 +247,18 @@ void handleSettings() {
 </td>\
 </tr>\
 <tr>\
+<th align=left>Upload WiFi</th>\
+<td align=right>\
+<INPUT type='text' name='uploadssid' maxlength='17' size='17' value='ssid'>\
+</td>\
+</tr>\
+<tr>\
+<th align=left>Upload pass</th>\
+<td align=right>\
+<INPUT type='text' name='uploadkey' maxlength='17' size='17' value='pass'>\
+</td>\
+</tr>\
+<tr>\
 <th align=left>Units</th>\
 <td align=right>\
 <select name='units'>\
@@ -333,6 +345,7 @@ void handleSettings() {
 </td>\
 </tr>"),
   settings->server, settings->key,
+  settings->uploadssid, settings->uploadkey,
   (settings->units == UNITS_METRIC    ? "selected" : ""), UNITS_METRIC,
   (settings->units == UNITS_IMPERIAL  ? "selected" : ""), UNITS_IMPERIAL,
   (settings->units == UNITS_MIXED     ? "selected" : ""), UNITS_MIXED,
