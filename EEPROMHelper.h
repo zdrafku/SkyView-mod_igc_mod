@@ -27,6 +27,8 @@
 
 #define SKYVIEW_EEPROM_MAGIC   0xABBAFACE
 #define SKYVIEW_EEPROM_VERSION 0x0000001C
+#define DEFAULT_UPLOAD_SSID     "myWiFi"
+#define DEFAULT_UPLOAD_KEY      "myPass"
 #define DEFAULT_G_PILOT         "Pilot in command"
 #define DEFAULT_G_CREW          "Instructor"
 #define DEFAULT_G_TYPE          "Glider"
@@ -43,6 +45,9 @@ typedef struct Settings {
     uint8_t  baudrate;
     char     server  [18];
     char     key     [18];
+
+    char     uploadssid  [18];
+    char     uploadkey   [18];
 
     uint8_t  resvd1:2;
     uint8_t  orientation:1;

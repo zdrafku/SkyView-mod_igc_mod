@@ -9,10 +9,10 @@
 #include "WiFiUpload.h"
 
 void uWiFi_setup() {
-  Serial.printf("\n\nConnecting to %s", SSID_NAME);
+  Serial.printf("\n\nConnecting to %s", settings->uploadssid);
 
   WiFi.disconnect();
-  WiFi.begin(SSID_NAME, SSID_PASSWORD);
+  WiFi.begin(settings->uploadssid, settings->uploadkey);
   /*
     IPAddress ip(192, 168, 1, 254);
     IPAddress gateway(192, 168, 1, 1);

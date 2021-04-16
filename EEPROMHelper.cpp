@@ -80,6 +80,9 @@ void EEPROM_defaults()
   strcpy(eeprom_block.field.settings.server,    DEFAULT_AP_SSID);
   strcpy(eeprom_block.field.settings.key,       DEFAULT_AP_PSK);
 
+  strcpy(eeprom_block.field.settings.uploadssid,      DEFAULT_UPLOAD_SSID);
+  strcpy(eeprom_block.field.settings.uploadkey,       DEFAULT_UPLOAD_KEY);
+
   eeprom_block.field.settings.units           = UNITS_METRIC;
   eeprom_block.field.settings.vmode           = VIEW_MODE_RADAR;
   eeprom_block.field.settings.zoom            = ZOOM_MEDIUM;
@@ -92,9 +95,9 @@ void EEPROM_defaults()
   eeprom_block.field.settings.power_save      = POWER_SAVE_NONE;
   eeprom_block.field.settings.team            = 0;
 
-  strcpy(eeprom_block.field.settings.glider_pilot,    DEFAULT_G_PILOT);
-  strcpy(eeprom_block.field.settings.glider_crew,    DEFAULT_G_CREW);
-  strcpy(eeprom_block.field.settings.glider_type,    DEFAULT_G_TYPE);
+  strcpy(eeprom_block.field.settings.glider_pilot,           DEFAULT_G_PILOT);
+  strcpy(eeprom_block.field.settings.glider_crew,            DEFAULT_G_CREW);
+  strcpy(eeprom_block.field.settings.glider_type,            DEFAULT_G_TYPE);
   strcpy(eeprom_block.field.settings.glider_registration,    DEFAULT_G_REGISTRATION);
 }
 

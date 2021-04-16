@@ -14,8 +14,8 @@
 #include "WiFi.h"
 
 
-#define SSID_NAME     "WIFI SSID"
-#define SSID_PASSWORD "WIFI PASS"
+//#define SSID_NAME     "WIFI SSID"
+//#define SSID_PASSWORD "WIFI PASS"
 //#define IGC_DIRECTORY "/igc/"
 #define IGC_ARCHIVE   "/archive"
 
